@@ -13,7 +13,7 @@ public class ClientHandler extends AbstractStreamHandler {
     @Override
     public void read(Object msg) {
         ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) msg);
-        ObjectInput in = null;
+        ObjectInput in;
 
         try {
             in = new ObjectInputStream(bis);

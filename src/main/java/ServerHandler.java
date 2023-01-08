@@ -41,8 +41,7 @@ public class ServerHandler extends AbstractStreamHandler {
             case OPENED:
                 System.out.println(sessions.size());
                 if (sessions.size() >= maxPlayer) {
-                    System.out.println("COUIFEGCYDSHQFE");
-                    sendToCurrent(new ErrorPacket(Command.TOO_MANY_PLAYERS, "Il y as déjà " + maxPlayer + " dans la partie !"));
+                    sendToCurrent(new ErrorPacket(Command.TOO_MANY_PLAYERS, "Il y as déjà " + maxPlayer + " joueurs dans la partie !"));
                     getSession().close();
                     return;
                 }
@@ -58,29 +57,35 @@ public class ServerHandler extends AbstractStreamHandler {
         }
     }
 
+    private byte[] preparePacket(Packet packet) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream outputStream;
+        byte[] data = null;
+
+        try {
+            outputStream = new ObjectOutputStream(bos);
+            outputStream.writeObject(packet);
+            outputStream.flush();
+            data = bos.toByteArray();
+            bos.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return data;
+    }
+
     private void sendToAll(String message) {
         long youId = getSession().getId();
         String userId = (String) getSession().getAttributes().get(USERID);
 
         for (IStreamSession session: sessions.values()) {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream outputStream = null;
-
-            try {
-                outputStream = new ObjectOutputStream(bos);
-                outputStream.writeObject(new InformationPacket(Command.INFO, (session.getId() == youId ? YOUID : userId) + ' ' + message));
-                outputStream.flush();
-                byte[] data = bos.toByteArray();
-                session.write(data);
-                bos.close();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
+            session.write(preparePacket(new InformationPacket(Command.INFO, (session.getId() == youId ? YOUID : userId) + ' ' + message)));
         }
     }
 
     private void sendToCurrent(Packet packet) {
-        getSession().write(packet);
+        getSession().write(preparePacket(packet));
     }
 }

@@ -37,12 +37,15 @@ public class Server implements Runnable{
             channel.configureBlocking(false);
             channel.socket().bind(new InetSocketAddress(8002));
 
+            ServerHandler serverHandler = new ServerHandler(MIN_PLAYER, MAX_PLAYER);
+
             // Register the listener
             loop.register(channel, new AbstractSessionFactory() {
 
                 @Override
                 protected IStreamHandler createHandler(SocketChannel channel) {
-                    return new ServerHandler(MIN_PLAYER, MAX_PLAYER);
+                    System.out.println("copucoe");
+                    return serverHandler;
                 }
             }).sync();
 
